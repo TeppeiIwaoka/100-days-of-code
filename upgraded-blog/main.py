@@ -10,6 +10,7 @@ api_endpoint = "https://api.npoint.io/43644ec4f0013682fc0d"
 blog_data = requests.get(api_endpoint).json()
 my_email = "XXX"
 password = "XXX"
+mail_to = "XXX"
 
 
 @app.route("/")
@@ -36,7 +37,7 @@ def contact():
             connection.starttls()
             connection.login(user=my_email, password=password)
             connection.sendmail(from_addr=my_email,
-                                to_addrs="tep731kaizi@gmai.com",
+                                to_addrs=mail_to,
                                 msg=f'Subject:Message from your blog\n\n {mail_content}'
                                 )
         return render_template("contact.html", msg_sent=True)
