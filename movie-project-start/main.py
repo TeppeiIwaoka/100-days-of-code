@@ -14,6 +14,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///movies.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+api_key = "XXX"
+endpoint = "https://api.themoviedb.org/3/movie/550"
+
+
 class Movie(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(250), unique=True, nullable=False)
@@ -23,12 +27,63 @@ class Movie(db.Model):
     ranking = db.Column(db.Integer, nullable=False)
     review = db.Column(db.String(250), nullable=False)
     img_url = db.Column(db.String(250), nullable=False)
+
+
 db.create_all()
+
+
+class RatingForm(FlaskForm):
+    rating = StringField('Your Rating Out of 10')
+    review = StringField('Your Review')
+    submit = SubmitField('Done')
+
+
+class NewMovieForm(FlaskForm):
+    title = StringField('Movie Title', validators=[DataRequired()])
+    submit = SubmitField('Add Movie')
+
 
 @app.route("/")
 def home():
     all_movies = db.session.query(Movie).all()
     return render_template("index.html", all_movies=all_movies)
+
+
+@app.route("/edit", methods=["GET", "POST"])
+def edit():
+    form = RatingForm()
+    movie_id = request.args.get('id')
+    movie = Movie.query.get(movie_id)
+    if form.validate_on_submit():
+        movie.rating = float(form.rating.data)
+        movie.review = form.review.data
+        db.session.commit()
+        return redirect(url_for('home'))
+    return render_template("edit.html", movie=movie, form=form)
+
+
+@app.route('/delete')
+def delete():
+    movie_id = request.args.get('id')
+    movie_to_delete = Movie.query.get(movie_id)
+    db.session.delete(movie_to_delete)
+    db.session.commit()
+    return redirect(url_for('home'))
+
+
+@app.route('/add')
+def add():
+    form = NewMovieForm()
+    if form.validate_on_submit():
+        movie = form.title.data
+        param = {
+            "api_key": api_key,
+            "query": movie,
+        }
+        response = requests.get(url=endpoint, params=param)
+        data = response.json()["results"]
+        return render_template("select.html", options=data)
+    return render_template('add.html', form=form)
 
 
 if __name__ == '__main__':
