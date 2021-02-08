@@ -53,7 +53,7 @@
   </nav>
 
   <!-- Page Header -->
-  <header class="masthead" style="background-image: url({{ data.image_url }})">
+  <header class="masthead" style="background-image: url('{{data.img_url}}')">
     <div class="overlay"></div>
     <div class="container">
       <div class="row">
@@ -62,7 +62,6 @@
             <h1>{{ data.title }}</h1>
             <h2 class="subheading">{{ data.subtitle }}</h2>
             <span class="meta">Posted by {{ data.author }}
-              <a href="#">Start Bootstrap</a>
               {{ data.date }}</span>
           </div>
         </div>
@@ -75,13 +74,16 @@
     <div class="container">
       <div class="row">
         <div class="col-lg-8 col-md-10 mx-auto">
-          <p>{{ data.body }}</p>
+          <p>{{ data.body|safe }}</p>
+          <hr>
+          <div>
+            <a class="btn btn-primary float-right" href="{{url_for('edit_post', post_id=data.id)}}">Edit Post</a>
+
+          </div>
         </div>
       </div>
     </div>
   </article>
-
-  <hr>
 
   <!-- Footer -->
 {% include "footer.html" %}
